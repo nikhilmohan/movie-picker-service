@@ -12,4 +12,6 @@ public interface MovieFeedRepository extends ReactiveMongoRepository<MovieFeed, 
 
 
     Mono<MovieFeed> findByFeedDate(LocalDate now);
+
+
 }
