@@ -9,6 +9,7 @@ import com.nikhilm.hourglass.moviepickerservice.services.MovieService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,32 +31,35 @@ public class MovieResource {
     MovieFeedRepository movieFeedRepository;
 
     @GetMapping("/movies")
-    public Mono<MovieResponse> getMovies()  {
+    public Mono<MovieResponse> getMovies(@RequestHeader("user") Optional<String> user)  {
+        log.info("Invoked movies");
         return movieFeedRepository.findByFeedDate(LocalDate.now())
                 .flatMap(movieFeed -> {
                     MovieResponse movieResponse = new MovieResponse();
                     movieResponse.getMovies().addAll(movieFeed.getMovies());
                     movieResponse.setFeedDate(LocalDate.now());
-                    //retrieve user
-                    // check favourites
-                    String movieParams = constructParam(movieResponse.getMovies());
-                    log.info("movieParams" + movieParams);
-                    WebClient client = WebClient.create("http://localhost:9040/favourites/user/1234/movies");
-                    return client.get().uri("?ids="+movieParams)
-                            .retrieve()
-                            .bodyToMono(FavouriteMoviesResponse.class)
-                            .flatMap(favouriteMoviesResponse -> {
-                                movieResponse.setMovies(movieResponse.getMovies().stream()
-                                        .map(movie -> {
-                                            movie.setFavourite(isFavouriteMovie(movie.getId(),favouriteMoviesResponse));
-                                            return movie;
-                                        })
-                                        .collect(Collectors.toList()));
+                    if (user.isPresent()) {
+                        //retrieve user
+                        // check favourites
+                        String movieParams = constructParam(movieResponse.getMovies());
+                        log.info("movieParams" + movieParams);
+                        WebClient client = WebClient.create("http://localhost:9900/favourites-service/favourites/user/" + user.orElse("dummy") + "/movies");
+                        return client.get().uri("?ids=" + movieParams)
+                                .retrieve()
+                                .bodyToMono(FavouriteMoviesResponse.class)
+                                .flatMap(favouriteMoviesResponse -> {
+                                    movieResponse.setMovies(movieResponse.getMovies().stream()
+                                            .map(movie -> {
+                                                movie.setFavourite(isFavouriteMovie(movie.getId(), favouriteMoviesResponse));
+                                                return movie;
+                                            })
+                                            .collect(Collectors.toList()));
 
-                                return Mono.just(movieResponse);
+                                    return Mono.just(movieResponse);
 
                                 });
-                            })
+                    } else return Mono.just(movieResponse);
+                })
                 .switchIfEmpty(Mono.defer(()->this.getNewFeed()));
 
     }
