@@ -17,5 +17,6 @@ public class MovieResponse {
     private List<Movie> movies = new ArrayList<>();
     @JsonFormat(pattern="yyyy-MM-dd")
     private LocalDate feedDate;
+    private boolean isFavouritesEnabled = true;
 
 }

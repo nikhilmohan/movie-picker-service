@@ -16,13 +16,17 @@ public class Movie {
     private String id;
     private String title;
     private String year;
+    @JsonProperty("certification")
     private String rated;
+    @JsonProperty("runningTime")
     private String runtime;
     private String genre;
     private String plot;
     private String poster;
+    @JsonProperty("ratings")
     private String imdbRating;
     private String imdbVotes;
     private boolean used;
+    @JsonProperty("favourite")
     private boolean isFavourite = false;
 }
