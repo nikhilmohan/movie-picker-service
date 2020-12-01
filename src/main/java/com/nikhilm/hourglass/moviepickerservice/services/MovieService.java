@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,8 +95,8 @@ public class MovieService {
         }
         return Flux.fromIterable(randomIndices);
     }
-    private long getRandomNumberinRange(long min, long max) {
-        return (long) ((Math.random() * (max - min)) + min);
+    public long getRandomNumberinRange(long min, long max) {
+        return new SecureRandom().longs(min, max + 1).findFirst().getAsLong();
     }
 
 }
