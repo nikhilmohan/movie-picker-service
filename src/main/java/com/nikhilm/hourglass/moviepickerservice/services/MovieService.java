@@ -63,7 +63,7 @@ public class MovieService {
 
     private Mono<ClientResponse> callFavourites(String userId, String params)    {
         return webClient.get()
-                .uri("http://localhost:9900/favourites-service/favourites/user/" + userId + "/movies?ids="+params)
+                .uri("http://gateway-service:9900/favourites-service/favourites/user/" + userId + "/movies?ids="+params)
                 .exchange();
 
     }
