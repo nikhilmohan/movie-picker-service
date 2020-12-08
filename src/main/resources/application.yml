@@ -13,11 +13,15 @@ spring:
       host: localhost
       port: 27017
       database: hourglass
+service.url:
+  gateway: localhost
 ---
 spring:
   profile: prod
   data:
     mongodb:
-      host: mongodb
+      host: hourglassdb-service
       port: 27017
       database: hourglass
+service.url:
+  gateway: gateway-service

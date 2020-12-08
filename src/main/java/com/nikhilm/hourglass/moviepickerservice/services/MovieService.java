@@ -30,6 +30,10 @@ public class MovieService {
 
     private int movieFeedSize;
 
+    @Value("${service.url.gateway}")
+    private String serviceGatewayUrl;
+
+
     @Value("${movieFeedSize}")
     public void setMovieFeedSize(int movieFeedSize)  {
         this.movieFeedSize = movieFeedSize;
@@ -63,7 +67,7 @@ public class MovieService {
 
     private Mono<ClientResponse> callFavourites(String userId, String params)    {
         return webClient.get()
-                .uri("http://gateway-service:9900/favourites-service/favourites/user/" + userId + "/movies?ids="+params)
+                .uri("http://" + serviceGatewayUrl + ":9900/favourites-service/favourites/user/" + userId + "/movies?ids="+params)
                 .exchange();
 
     }
