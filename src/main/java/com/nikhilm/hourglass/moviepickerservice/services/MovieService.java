@@ -75,6 +75,7 @@ public class MovieService {
         log.info("Fetching favourites for user " + userId);
         return callFavourites(userId, params)
                 .flatMap(clientResponse -> {
+                    log.info("Favourites response " + clientResponse.statusCode().toString());
                     if (!clientResponse.statusCode().is2xxSuccessful())  {
                         return Mono.error(new RuntimeException("Favourites service error!"));
                     }
