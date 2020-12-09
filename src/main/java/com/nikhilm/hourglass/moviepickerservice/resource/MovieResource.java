@@ -20,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,9 +48,10 @@ public class MovieResource {
     public Mono<MovieResponse> getMovies(@RequestHeader("user") Optional<String> user)  {
 
         log.info("Invoked movies " + user.orElse("Not present!"));
+        MovieResponse movieResponse = new MovieResponse();
         return movieFeedRepository.findByFeedDate(LocalDate.now())
                 .flatMap(movieFeed -> {
-                    MovieResponse movieResponse = new MovieResponse();
+
                     movieResponse.getMovies().addAll(movieFeed.getMovies());
                     movieResponse.setFeedDate(LocalDate.now());
                     if (user.isPresent()) {
@@ -79,10 +81,31 @@ public class MovieResource {
                     } else return Mono.just(movieResponse);
                 })
                 .switchIfEmpty(Mono.defer(()->this.getNewFeed()))
-                .onErrorMap(throwable -> new MovieException(500, "Internal server error!"));
+                .onErrorReturn(getFallbackResponse());
+
+
 
     }
 
+    private MovieResponse getFallbackResponse() {
+        MovieResponse fallbackResponse = new MovieResponse();
+        log.info("Getting fallback response");
+        fallbackResponse.setMovies(Arrays.asList(new Movie("5f9672a3d20d3846ef8cd39d", "Knife in the Clear Water", "2016", "N/A",
+                        "92 min",
+                        "Drama",
+                        "Ma Zishan (Yang Shengcang) is an aging Muslim farmer, part of the Hui minority. He and his family eke out an existence farming on an arid moonscape in China's northwest Ningxia province. ...",
+                        "https://m.media-amazon.com/images/M/MV5BMTg1MmUwOGYtZTQ2ZS00ODgzLWFlODEtNDAxY2U4YWE0NDczXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg", "7.0", "8196", false, false),
+                new Movie("5f96741231a5f039c69e7235", "Fear City: A Family-Style Comedy", "1994", "Unrated", "93 min",
+                        "Comedy, Horror",
+                        "A second-class horror movie has to be shown at Cannes Film Festival, but, before each screening, the projectionist is killed by a mysterious fellow, with hammer and sickle, just as it happens in the film to be shown.", "https://m.media-amazon.com/images/M/MV5BMjVlZDliMWItMDI3ZS00OTc3LTlmZWYtZmMxZDlkMTlhYTNhXkEyXkFqcGdeQXVyMTYzMDM0NTU@._V1_SX300.jpg", "7.5", "8196", false, false),
+                new Movie("5f967471cd5fdb67817a8f1c", "The Light in the Forest", "1958", "N/A",
+                        "83 min",
+                        "Adventure, Drama, Family, Romance, Western",
+                        "A young white man who spent his whole life raised by Native Americans is sent to live with his birth family and must learn to fit in with people he was taught to hate.",
+                        "https://m.media-amazon.com/images/M/MV5BMGE5YjY5ZjYtZTRkOC00Y2MzLThjZjQtODJhNzcwYzVhMDA1XkEyXkFqcGdeQXVyMTE2NzA0Ng@@._V1_SX300.jpg", "7.2", "83 min", false, false)));
+        return fallbackResponse;
+
+    }
 
 
     private boolean isFavouriteMovie(String id, FavouriteMoviesResponse favouriteMoviesResponse) {

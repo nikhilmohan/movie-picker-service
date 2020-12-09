@@ -82,7 +82,7 @@ public class MovieService {
                 });
     }
     private Flux<Long> generateRandom(Long count)    {
-        log.info("Movie feed size : " + getMovieFeedSize());
+        log.info("Movie feed size : " + getMovieFeedSize() + " " + count);
         if (count < getMovieFeedSize()) {
             throw new MovieException(500, "Insufficient number of entries!");
         }
