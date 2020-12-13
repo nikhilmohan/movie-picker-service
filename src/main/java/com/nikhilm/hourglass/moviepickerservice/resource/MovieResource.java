@@ -1,22 +1,23 @@
 package com.nikhilm.hourglass.moviepickerservice.resource;
 
-import com.nikhilm.hourglass.moviepickerservice.exceptions.MovieException;
 import com.nikhilm.hourglass.moviepickerservice.models.*;
 import com.nikhilm.hourglass.moviepickerservice.repositories.MovieFeedRepository;
 import com.nikhilm.hourglass.moviepickerservice.services.MovieService;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreaker;
 import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFactory;
-import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.cloud.stream.annotation.Output;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -27,6 +28,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
+@OpenAPIDefinition(
+        info = @Info(
+                title = "Movie Picker service API",
+                version = "1.0",
+                description = "API for fetching movie recommendations in hourglass application",
+                contact = @Contact(name = "Nikhil Mohan", email = "nikmohan81@gmail.com")
+        )
+)
 public class MovieResource {
 
     @Autowired
@@ -44,8 +53,13 @@ public class MovieResource {
         rcb = factory.create("movies");
     }
 
+    @Operation(summary = "Fetch movie recommendations for the day")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of movies",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MovieResponse.class)) })})
     @GetMapping("/movies")
-    public Mono<MovieResponse> getMovies(@RequestHeader("user") Optional<String> user)  {
+    public Mono<MovieResponse> getMovies(@RequestHeader(name = "user", required = false) Optional<String> user)  {
 
         log.info("Invoked movies " + user.orElse("Not present!"));
         MovieResponse movieResponse = new MovieResponse();
